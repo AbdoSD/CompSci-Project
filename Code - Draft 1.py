@@ -18,18 +18,19 @@ class Game:
                 self.running = True
                 self.font_name = pg.font.match_font(FONT_NAME)
                 self.load_data()
+                self.player = None
                 
 
         def load_data(self):
                 self.dir = path.dirname(__file__)
-                
+               
                 with open(path.join(self.dir, HS_FILE), 'r') as f:
                         #try and except runs some code and if an error becomes present it runs some other code to run
                         try:
                                 self.highscore = int(f.read())
                         except:
                                 self.highscore = 0
-                #load spritesheet image
+                
                
 
         def new(self):
@@ -39,13 +40,15 @@ class Game:
                 self.all_sprites = pg.sprite.LayeredUpdates()
                 self.platforms = pg.sprite.Group()
                 self.powerups = pg.sprite.Group()
+                self.meteorites = pg.sprite.Group()
+                self.fireballs = pg.sprite.Group()
                 self.enemies = pg.sprite.Group()
                 self.stars = pg.sprite.Group()
-                self.player = Player(self, Purple, 30, 40, 30)
+                self.player = Player(self)
                 for plat in PLATFORM_LIST:
                        Platform(self, *plat)
                 self.enemy_timer = 0
-                for i in range (8):
+                for i in range (6):
                         s = Star(self)
                         s.rect.y += 500
                 self.run()
@@ -69,7 +72,7 @@ class Game:
                 self.all_sprites.update()
                 #spawn an enemy
                 now = pg.time.get_ticks()
-                if now - self.enemy_timer > 5000 + random.choice([-1000, -500, 0, 500, 1000]):
+                if now - self.enemy_timer > 2500 + random.choice([-1000, -500, 0, 500, 1000]):
                         self.enemy_timer = now
                         Enemy(self)
                 # hit enemies
@@ -91,9 +94,14 @@ class Game:
                                                  self.player.vel.y = 0
                                                  self.player.jumping = False
 
-                # if the player reaches the top 1/4 of the screen platforms start to disappear and points can be
+                # check to see if a fireball hit an enemy
+                hits = pg.sprite.groupcollide(self.enemies, self.fireballs, True, True)
+                if hits:
+                        self.score +=5
+
+                # if the player reaches the top 1/3 of the screen platforms start to disappear and points can be
                 # gained this way
-                if self.player.rect.top <= HEIGHT / 4:
+                if self.player.rect.top <= HEIGHT / 3:
                         if random.randrange(100) < 15:
                                 Star(self)
                         self.player.pos.y += max(abs(self.player.vel.y), 2)
@@ -105,7 +113,7 @@ class Game:
                                  plat.rect.y += max(abs(self.player.vel.y), 2)
                                  if plat.rect.top >= HEIGHT:
                                          plat.kill()
-                                         self.score += 10
+                                         self.score += 20
 
                 # If player hits a powerup
                 power_hits = pg.sprite.spritecollide(self.player, self.powerups, True)
@@ -113,6 +121,9 @@ class Game:
                          if power.type == 'boost' :
                                  self.player.vel.y = -BOOST_POWER
                                  self.player.jumping = False
+
+                # If player hits a meteorite
+               
 
 
                 #Die
@@ -147,21 +158,29 @@ class Game:
                         if event.type ==pg.KEYUP:
                                 if event.key == pg.K_SPACE:
                                         self.player.jump_cut()
+                        if event.type == pg.KEYDOWN:
+                                if event.key == pg.K_UP:
+                                        self.player.shoot()
+                        if event.type == pg.KEYDOWN:
+                                if event.key == pg.K_DOWN:
+                                        self.player.shoot()
 
         def draw(self):
                 #Game loop - draw
                 self. screen.fill(Blue)
                 self.all_sprites.draw(self.screen)
-                
                 self.draw_text(str(self.score), 22, White, WIDTH / 2, 15)
+        
                 pg.display.flip()
                 
                 
                
         def show_start_screen(self):
                 self.screen.fill(Blue)
-                self.draw_text(TITLE, 48, Black, WIDTH / 2, HEIGHT / 4)
-                self.draw_text("Arrows to move, Space to jump", 22, White, WIDTH / 2, HEIGHT / 2)
+                self.draw_text(TITLE, 48, White, WIDTH / 2, HEIGHT / 4)
+                self.draw_text("Left and Right arrows to move", 22, White, WIDTH / 2, HEIGHT / 2)
+                self.draw_text("Up and down arrows to shoot", 22, White, WIDTH / 2, HEIGHT * 55/100)
+                self.draw_text("Space to jump", 22, White, WIDTH / 2, HEIGHT * 3/5)
                 self.draw_text("Press a key to play", 22, White, WIDTH / 2, HEIGHT * 3/4)
                 self.draw_text("High Score: " + str(self.highscore), 22, White, WIDTH / 2, 15)
                 pg.display.flip()
@@ -199,7 +218,7 @@ class Game:
                                  if event.type == pg.QUIT:
                                          waiting = False
                                          self.running = False
-                                 if event.type == pg.KEYUP:
+                                 if event.type == pg.KEYUP: 
                                           waiting = False
 
         def draw_text(self, text, size, color, x, y):
@@ -208,6 +227,7 @@ class Game:
                  text_rect = text_surface.get_rect()
                  text_rect.midtop = (x, y)
                  self.screen.blit(text_surface, text_rect)
+               
 
 
 

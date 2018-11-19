@@ -3,7 +3,7 @@ TITLE = "Space Hopper"
 WIDTH = 480
 HEIGHT = 640
 FPS = 60
-FONT_NAME = 'arial'
+FONT_NAME = 'OCR A extended'
 HS_FILE = "highscore.txt"
 
 
@@ -13,13 +13,16 @@ PLAYER_GRAV = 0.8
 
 #Game properties
 BOOST_POWER = 50
+FIREBALL_SPAWN = 3
 POWER_SPAWN_PCT = 7
-MOB_FREQ = 5000
+ENEMY_FREQ = 2500
 PLAYER_LAYER = 2
 PLATFORM_LAYER = 1
 POWER_LAYER = 1
 ENEMY_LAYER = 2
 STAR_LAYER = 0
+METEORITE_LAYER = 1
+FIREBALL_LAYER = 2
 
 
 
@@ -41,6 +44,8 @@ Grey = (190,190,190)
 Black = (0,0,0)
 White = (255, 255, 255)
 Yellow = (255, 255, 0)
+Snow = (255,250,250)
+Mintcream = (245,255,250)
 
 
 

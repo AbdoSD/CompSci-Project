@@ -8,15 +8,16 @@ vec = pg.math.Vector2
 
 class Player(pg.sprite.Sprite):
         #Sprite for the player
-        def __init__(self, game, color, width, height, speed):
+        def __init__(self, game):
                 self._layer = PLAYER_LAYER
                 self.groups = game.all_sprites
                 pg.sprite.Sprite.__init__(self, self.groups)
                 self.game = game
                 self.walking = False
                 self.jumping = False
-                self.image = pg.Surface([30, 40])   
-                self.image.fill(Purple)
+                self.fireballs = False
+                self.image = pg.image.load("img/test2.png").convert_alpha()
+                
                 self.rect = self.image.get_rect()
                 self.rect.center = (WIDTH / 2 , HEIGHT - 25)
                 self.pos = vec(WIDTH / 2, HEIGHT -25)
@@ -62,7 +63,18 @@ class Player(pg.sprite.Sprite):
                 
                 self.rect.midbottom = self.pos
 
+                
+
+        def shoot(self):
+                fireball = Fireball(self.game, self.rect.centerx, self.rect.top or self.rect.bottom)
+                self.game.all_sprites.add(fireball)
+                self.game.fireballs.add(fireball)
+
+
+
         
+
+
 class Platform(pg.sprite.Sprite):
         def __init__(self, game, x, y, w, h):
                 self.groups = game.all_sprites, game.platforms
@@ -80,10 +92,10 @@ class Star(pg.sprite.Sprite):
         def __init__(self, game):
                 self._layer = STAR_LAYER
                 self.groups = game.all_sprites, game.stars
+                #super. __init__(self, self.groups)
                 pg.sprite.Sprite. __init__(self, self.groups)
                 self.game = game
-                self.image = pg.Surface([10, 10])
-                self.image.fill(Yellow)
+                self.image = pg.image.load("img/saturn.png")
                 self.rect = self.image.get_rect()
                 self.rect.x = randrange(WIDTH - self.rect.width)
                 self.rect.y = randrange(-500, -50)
@@ -100,8 +112,7 @@ class Power(pg.sprite.Sprite):
                 self.game = game
                 self.plat = plat
                 self.type = choice (['boost'])
-                self.image = pg.Surface([20, 20])
-                self.image.fill(Grey)
+                self.image = pg.image.load("img/assroids.png")
                 self.rect = self.image .get_rect()
                 self.rect.centerx = self.plat.rect.centerx
                 self.rect.bottom = self.plat.rect.top - 5
@@ -117,11 +128,10 @@ class Enemy(pg.sprite.Sprite):
                 self.groups = game.all_sprites, game.enemies
                 pg.sprite.Sprite.__init__(self, self.groups)
                 self.game = game
-                self.image = pg.Surface([30, 30])
-                self.image.fill(Red)
+                self.image = pg.image.load("img/greenie.png")
                 self.rect = self.image .get_rect()
                 self.rect.centerx = choice([-100, WIDTH + 100])
-                self.vx = randrange(1, 4)
+                self.vx = randrange(3, 6)
                 if self.rect.centerx > WIDTH:
                         self.vx *= -1
                 self.rect.y = randrange(HEIGHT / 2)
@@ -139,8 +149,50 @@ class Enemy(pg.sprite.Sprite):
                 self.rect.y += self.vy
                 if self.rect.left > WIDTH + 100 or self.rect.right < -100:
                         self.kill()
-                
 
+class Meteorite(pg.sprite.Sprite):
+        def __init__(self, game, plat):
+                self._layer = METEORITE_LAYER
+                self.groups = game.all_sprites, game.meteorites
+                pg.sprite.Sprite.__init__(self, self.groups)
+                self.game = game
+                self.plat = plat
+                self.type = choice(['fireballs'])
+                self.image = pg.Surface([20, 20])
+                self.image.fill(Ivory)
+                self.rect = self.image .get_rect()
+                self.rect.centerx = self.plat.rect.centerx
+                self.rect.bottom = self.plat.rect.top - 5
+
+        def update(self):
+                self.rect.bottom = self.plat.rect.top - 5
+                if not self.game.platforms.has(self.plat):
+                        self.kill()
+
+class Fireball(pg.sprite.Sprite):
+        def __init__(self,game,x,y):
+                self._layer = FIREBALL_LAYER
+                self.groups = game.all_sprites, game.fireballs
+                pg.sprite.Sprite.__init__(self, self.groups)
+                self.game = game
+                self.image = pg.image.load("img/fireball.png")
+                
+                self.rect = self.image.get_rect()
+                self.rect.bottom = y 
+                self.rect.top = y
+                self.rect.centerx = x
+                self.speedy = -10 or 10
+
+        def update(self):
+                self.rect.y += self.speedy
+                #kill if it moves off the top of the screen
+                if self.rect.bottom < 0:
+                        self.kill()
+                if self.rect.top > HEIGHT:
+                        self.kill()
+                
+        
+                
  
 
 

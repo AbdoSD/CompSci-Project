@@ -132,7 +132,7 @@ class Game:
                 self.draw_text(TITLE, 48, Black, WIDTH / 2, HEIGHT / 4)
                 self.draw_text("Arrows to move, Space to jump", 22, Black, WIDTH / 2, HEIGHT / 2)
                 self.draw_text("Press a key to play", 22, Black, WIDTH / 2, HEIGHT * 3/4)
-                self.draw_text("High Score: " + str(self.highscore, 22, Black, WIDTH / 2, 15)
+                self.draw_text("High Score: " + str(self.highscore, 22, Black, WIDTH / 2, 15))
                 pygame.display.flip()
                 self.wait_for_key()
                 
@@ -152,7 +152,7 @@ class Game:
                          with open(path.join(self.dir, HS_FILE), 'w') as f:
                                  f.write(str(self.score))
                  else:
-                        self.draw_text("High Score: " + str(self.highscore, 22, Black, WIDTH / 2, HEIGHT / 2 + 40)
+                        self.draw_text("High Score: " + str(self.highscore, 22, Black, WIDTH / 2, HEIGHT / 2 + 40))
                    
                  pygame.display.flip()
                  self.wait_for_key()
