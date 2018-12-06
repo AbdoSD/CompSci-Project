@@ -28,8 +28,10 @@ class Player(pygame.sprite.Sprite):
                 #set height and width as local variables, fill the colour of the image.
                 width = 50
                 height = 50
-                self.image = pygame.image.load("img/test2.png")
+                self.image =  pygame.Surface([width,height])
+                self.image.fill(Green)
                 self.rect = self.image.get_rect()
+                ()
                  #speed of the player. Change in its x direction or change
                 # in its  y direction
                 self.change_x = 0
@@ -77,7 +79,7 @@ class Player(pygame.sprite.Sprite):
 
                 # When there are 5 platforms on screen, spawn a random platform as defined below.
                 while len(self.platforms_group) == 5:
-                        PLATFORMS = Platform(random.randrange(0, WIDTH -100), random.randrange(-20, -10), 120, 80)
+                        PLATFORMS = Platform(random.randrange(0, WIDTH -100), random.randrange(-45,-40), 120, 80)
                         all_platforms_group.add(PLATFORMS)
                         all_sprites_list.add(PLATFORMS)
 
@@ -87,7 +89,7 @@ class Player(pygame.sprite.Sprite):
                 if self.change_y == 0:
                         self.change_y = 1
                 else:
-                        self.change_y += 0.25
+                        self.change_y += 0.45
 
         def jump(self):
                 #check below to see if there is anything to jump from then shift back up 
@@ -96,7 +98,7 @@ class Player(pygame.sprite.Sprite):
                 self.rect.y -=2
                 #Set the speed upwards if its ok to jump
                 if collides:
-                        self.change_y = -8
+                        self.change_y = -10
                         
         #Player controlled movement
         def move_left(self):
@@ -144,7 +146,7 @@ class Fireball(pygame.sprite.Sprite):
                 self.player = player
                 self.rect.x = self.player.rect.centerx
                 self.rect.y = self.player.rect.y
-                self.change_y = -10 or 10
+                self.change_y = -10 
 
         def update(self):
                 self.rect.y += self.change_y
@@ -182,21 +184,21 @@ all_sprites_list = pygame.sprite.Group()
 #create the sprites
 #platform = Platform()
 all_platforms_group = pygame.sprite.Group()
-p1 = Platform(300, HEIGHT - 100, 120,80)
-all_sprites_list.add(p1)
-all_platforms_group.add(p1)
-p2 = Platform(180, HEIGHT -  220, 120, 80)
-all_sprites_list.add(p2)
-all_platforms_group.add(p2)
-p3 = Platform(380, HEIGHT -  350, 120, 80)
-all_sprites_list.add(p3)
-all_platforms_group.add(p3)
-p4 = Platform(200, HEIGHT -  450, 120, 80)
-all_sprites_list.add(p4)
-all_platforms_group.add(p4)
-p5 = Platform(330, HEIGHT -  600, 120, 80)
-all_sprites_list.add(p5)
-all_platforms_group.add(p5)
+newplatform = Platform(300, HEIGHT - 100, 120,80)
+all_sprites_list.add(newplatform)
+all_platforms_group.add(newplatform)
+newplatform = Platform(180, HEIGHT -  220, 120, 80)
+all_sprites_list.add(newplatform)
+all_platforms_group.add(newplatform)
+newplatform = Platform(380, HEIGHT -  350, 120, 80)
+all_sprites_list.add(newplatform)
+all_platforms_group.add(newplatform)
+newplatform= Platform(200, HEIGHT -  450, 120, 80)
+all_sprites_list.add(newplatform)
+all_platforms_group.add(newplatform)
+newplatform = Platform(330, HEIGHT -  600, 120, 80)
+all_sprites_list.add(newplatform)
+all_platforms_group.add(newplatform)
 PLATFORMS = Platform(random.randrange(0, WIDTH -100), random.randrange(-50, -30), 120, 80)
 all_platforms_group.add(PLATFORMS)
 all_sprites_list.add(PLATFORMS)
