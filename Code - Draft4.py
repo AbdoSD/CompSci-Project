@@ -38,8 +38,10 @@ def draw_health(screen, color, x, y, health):
                 if health < 0:
                     health = 0
                 pygame.draw.rect(screen,color,[x,y,health,BAR_HEIGHT],0)
-                
 
+
+
+        
 
 class Player(pygame.sprite.Sprite):
         def __init__(self, all_platforms_group, enemy_group):
@@ -86,9 +88,8 @@ class Player(pygame.sprite.Sprite):
                 if enemycollision:
                     self.health = self.health - 20
                 
-                        
-               
-                 #wraps around the top and bottom of screen
+                    
+                #wraps around the top and bottom of screen
                 if self.rect.x > WIDTH:
                         self.rect.x= 0
                 if self.rect.x < 0:
@@ -116,14 +117,16 @@ class Player(pygame.sprite.Sprite):
                         all_platforms_group.add(PLATFORMS)
                         all_sprites_list.add(PLATFORMS)
 
-                while len(self.enemy_group) == 2:
-                        ENEMIES = Enemy(0 or WIDTH - 30, random.randrange(-80, -30), 30, 30)
-                        all_sprites_list.add(ENEMIES)
-                        enemy_group.add(ENEMIES)
+                if len(self.enemy_group) <= 2:
+                    pygame.time.set_timer(pygame.USEREVENT, 5000)
+                    
+
+                if len(self.enemy_group) >= 3:
+                    pygame.time.set_timer(pygame.USEREVENT, 0)
+                
+                         
 
                 
-
-
         def gravity(self):
                 #Effects of gravity
                 if self.change_y == 0:
@@ -209,6 +212,7 @@ class Enemy(pygame.sprite.Sprite):
                 self.rect.y = y
                 self.change_x = 0
                 self.change_y = 0
+                
 
         def update(self):
                 self.rect.x += self.change_x
@@ -218,13 +222,14 @@ class Enemy(pygame.sprite.Sprite):
                 if self.rect.x == WIDTH -30:
                         self.change_x = -3
 
-                
-                
+                              
+
 #initilaise pygame
 pygame.init()
 
 size = [WIDTH, HEIGHT]
 screen = pygame.display.set_mode(size)
+font= pygame.font.match_font('OCR A extended')
 
 
 #set title of the window
@@ -254,7 +259,6 @@ PLATFORMS = Platform(random.randrange(0, WIDTH -100), random.randrange(-50, -30)
 all_platforms_group.add(PLATFORMS)
 all_sprites_list.add(PLATFORMS)
 
-
 enemy_group = pygame.sprite.Group()
 newenemy = Enemy(0, HEIGHT - 380, 30, 30)
 all_sprites_list.add(newenemy)
@@ -262,12 +266,9 @@ enemy_group.add(newenemy)
 newenemy = Enemy(WIDTH - 30, HEIGHT - 530, 30, 30)
 all_sprites_list.add(newenemy)
 enemy_group.add(newenemy)
-ENEMIES = Enemy(0 or WIDTH - 30, random.randrange(-60, -40), 30, 30)
+ENEMIES = Enemy(0, random.randrange(-80, -30), 30, 30)
 all_sprites_list.add(ENEMIES)
 enemy_group.add(ENEMIES)
-
-
-
 
 
 #sets the player postion x and y cooridnates and adds it to sprite list
@@ -280,7 +281,7 @@ all_sprites_list.add(player)
 
 #loop until the player clicks the close button
 done = False
-playing = True
+
 
 #manage how fast the screen updates
 clock = pygame.time.Clock()
@@ -291,6 +292,12 @@ while not done:
         for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                         done = True
+
+                if event.type == pygame.USEREVENT:
+                    ENEMIES = Enemy(0 , random.randrange(-80, -30), 30, 30)
+                    all_sprites_list.add(ENEMIES)
+                    enemy_group.add(ENEMIES)
+                     
                 # When holding down a key      
                 keys = pygame.key.get_pressed()
                 if keys [pygame.K_LEFT]:
@@ -314,9 +321,12 @@ while not done:
         all_sprites_list.draw(screen)
         draw_health(screen, Green,10, 10, player.health)
         
+        
+        
          # screen blit allows the player image to be on top of everything else so when it passes somwthing
         # it doesnt disappear behind it.
         screen.blit(player.image, player.rect)
+        
 
           #Update the player
         all_sprites_list.update()
