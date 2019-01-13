@@ -61,10 +61,7 @@ class Player(pygame.sprite.Sprite):
                 self.enemy_group = enemy_group
                 self.health= 100
                 #The initialisation of a timer that will count from zero and time that amount of time that passes once an enemy
-                #player collides with enemy and begins losing health
-                self.time_since_last_hit = 0
-                # A timer that will spawn enemies based on the screen scrolling upwards initially set at zero
-                self.next_enemy_scroll_counter = 0
+              
                 
                 
                 
@@ -78,7 +75,6 @@ class Player(pygame.sprite.Sprite):
                 #To move up or down
                 self.rect.y += self.change_y
                 #Return the amount of seconds or milleiseconds that have passed since the timer began
-                self.time_since_last_hit += clock.get_time()
                 
                 #Check to see if player collides with something
                 #Resets player position based on the top or bottom of the object
@@ -94,13 +90,9 @@ class Player(pygame.sprite.Sprite):
 
                 # Enemy collision with player: Every half a second the timer checks for collisions between the player and enemy
                 #If there is a collision, ilast for half a second, reduces health by -20 and the timer resets to zero
-                if self.time_since_last_hit > 1000:
-                    enemycollision = pygame.sprite.spritecollide(self, self.enemy_group, False)
-                    if enemycollision:
-                        self.health = self.health - 20
-                        self.time_since_last_hit = 0
-                        if self.health == 0:
-                            done = True
+                enemycollision = pygame.sprite.spritecollide(self, self.enemy_group, False)
+                if enemycollision:
+                    self.health = self.health - 20
                 
                     
                 #wraps around the top and bottom of screen
@@ -122,9 +114,7 @@ class Player(pygame.sprite.Sprite):
                                 enemies.rect.y += abs(self.change_y)
                                 if enemies.rect.top >= HEIGHT:
                                         enemies.kill()
-                        self.next_enemy_scroll_counter -= abs(self.change_y)
-
-                
+                                     
                 if self.rect.bottom > HEIGHT:
                         done = True
                        
@@ -140,17 +130,10 @@ class Player(pygame.sprite.Sprite):
                         all_platforms_group.add(PLATFORMS)
                         all_sprites_list.add(PLATFORMS)
 
-                # To spawn random enemies, if there are less than 3 and the timer is zero..
-                if len(self.enemy_group) < 3 and self.next_enemy_scroll_counter <= 0:
-                    #One line if statement that chooses one of two random x coordinates to spawn an enemy
-                    newenemyx = 0 if random.randint(0, 1) == 0  else WIDTH - 30
-                    #Random y cooridnate just above the screen
-                    newenemyy = random.randrange(-80, -30)
-                    ENEMIES = Enemy(newenemyx, newenemyy, 30, 30)
+                while len(self.enemy_group) == 2:
+                    ENEMIES = Enemy(0 or WIDTH - 30, random.randrange(-80, -30), 30, 30)
                     all_sprites_list.add(ENEMIES)
                     enemy_group.add(ENEMIES)
-                    # spawn the enemy at the y cooridnate specified + a number of pixels to space it out 
-                    self.next_enemy_scroll_counter = abs(newenemyy) + 250
                     
                 
         def gravity(self):
@@ -239,14 +222,16 @@ class Enemy(pygame.sprite.Sprite):
                 self.rect.x += self.change_x
                 self.rect.y += self.change_y
                 if self.rect.x == 0:
-                        self.change_x = 5
+                        self.change_x = 3
                 if self.rect.x == WIDTH -30:
-                        self.change_x = -5
+                        self.change_x = -3
 
 
 
              
             
+
+
 #initilaise pygame
 pygame.init()
 
@@ -289,6 +274,10 @@ enemy_group.add(newenemy)
 newenemy = Enemy(WIDTH - 30, HEIGHT - 530, 30, 30)
 all_sprites_list.add(newenemy)
 enemy_group.add(newenemy)
+ENEMIES = Enemy(0 or WIDTH - 30, random.randrange(-80, -30), 30, 30)
+all_sprites_list.add(ENEMIES)
+enemy_group.add(ENEMIES)
+                    
 
 
 #sets the player postion x and y cooridnates and adds it to sprite list
