@@ -63,7 +63,7 @@ class Player(pygame.sprite.Sprite):
                 #The initialisation of a timer that will count from zero and time that amount of time that passes once an enemy
                 #player collides with enemy and begins losing health
                 self.time_since_last_hit = 0
-                # A timer that will spawn enemies based on the screen scrolling upwards initially set at zero
+                # A counter that will spawn enemies based on the screen scrolling upwards initially set at zero
                 self.next_enemy_scroll_counter = 0
                 
                 
@@ -150,7 +150,7 @@ class Player(pygame.sprite.Sprite):
                     all_sprites_list.add(ENEMIES)
                     enemy_group.add(ENEMIES)
                     # spawn the enemy at the y cooridnate specified + a number of pixels to space it out 
-                    self.next_enemy_scroll_counter = abs(newenemyy) + 250
+                    self.next_enemy_scroll_counter = (newenemyy) + 250
                     
                 
         def gravity(self):
@@ -244,9 +244,27 @@ class Enemy(pygame.sprite.Sprite):
                         self.change_x = -5
 
 
+class Powerup(pygame.sprite.Sprite):
+    def __init__(self, x, y, width, height):
+        super().__init__()
+        self.image = pygame.Surface([20, 20])
+        self.image.fill(Grey)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.spawn_powerup = 0 
 
+    def update(self):
+        self.spawn_powerup += clock.get_time()
+        self.spawn_powerup -= abs(self.change_y)
+        if self.spawn_powerup == 3000:
+            self.rect.x = random.randrange(0, WIDTH - 20)
+            self.rect.y = random.randrnage(-30, -150)
+            newpowerup = Powerup(newpowerupx, newpowerupy, 20, 20)
              
             
+
+
 #initilaise pygame
 pygame.init()
 
