@@ -44,7 +44,7 @@ def draw_health(screen, color, x, y, health):
         
 
 class Player(pygame.sprite.Sprite):
-        def __init__(self, all_platforms_group, enemy_group):
+        def __init__(self, platforms_group, enemy_group, powerups_group):
                 super().__init__()
                 #set height and width as local variables, fill the colour of the image.
                 width = 50
@@ -57,14 +57,19 @@ class Player(pygame.sprite.Sprite):
                 self.change_x = 0
                 self.change_y = 0
                 # gains the platform as an attribute so it can gain the platforms attributes and methods
-                self.platforms_group = all_platforms_group
+                self.platforms_group = platforms_group
                 self.enemy_group = enemy_group
+                self.powerups_group = powerups_group
                 self.health= 100
                 #The initialisation of a timer that will count from zero and time that amount of time that passes once an enemy
                 #player collides with enemy and begins losing health
                 self.time_since_last_hit = 0
                 # A counter that will spawn enemies based on the screen scrolling upwards initially set at zero
                 self.next_enemy_scroll_counter = 0
+                # A counter that will spawn powwrups also based on the screen scrolling upwards
+                self.next_powerup_scroll_counter = 100
+
+                self.time_since_last_shot = 0
                 
                 
                 
@@ -79,6 +84,8 @@ class Player(pygame.sprite.Sprite):
                 self.rect.y += self.change_y
                 #Return the amount of seconds or milleiseconds that have passed since the timer began
                 self.time_since_last_hit += clock.get_time()
+
+                self.time_since_last_shot += clock.get_time()
                 
                 #Check to see if player collides with something
                 #Resets player position based on the top or bottom of the object
@@ -99,8 +106,13 @@ class Player(pygame.sprite.Sprite):
                     if enemycollision:
                         self.health = self.health - 20
                         self.time_since_last_hit = 0
-                        if self.health == 0:
-                            done = True
+                    if self.health == 0:
+                        done = True
+
+                # collision for when player collides with powerup. If so then the powerup disappears and player should fly upwards at faster velocity
+                powerupcollision = pygame.sprite.spritecollide(self, self.powerups_group, True)
+                if powerupcollision:
+                    self.change_y = -20
                 
                     
                 #wraps around the top and bottom of screen
@@ -122,7 +134,12 @@ class Player(pygame.sprite.Sprite):
                                 enemies.rect.y += abs(self.change_y)
                                 if enemies.rect.top >= HEIGHT:
                                         enemies.kill()
+                        for powerups in self.powerups_group:
+                            powerups.rect.y += abs(self.change_y)
+                            if powerups.rect.top >= HEIGHT:
+                                        powerups.kill()
                         self.next_enemy_scroll_counter -= abs(self.change_y)
+                        self.next_powerup_scroll_counter -= abs(self.change_y)
 
                 
                 if self.rect.bottom > HEIGHT:
@@ -136,9 +153,9 @@ class Player(pygame.sprite.Sprite):
 
                 # When there are 5 platforms on screen, spawn a random platform as defined below.
                 while len(self.platforms_group) == 5:
-                        PLATFORMS = Platform(random.randrange(0, WIDTH -100), random.randrange(-45,-40), 120, 80)
-                        all_platforms_group.add(PLATFORMS)
-                        all_sprites_list.add(PLATFORMS)
+                        platform = Platform(random.randrange(0, WIDTH -100), random.randrange(-45,-40), 120, 80)
+                        self.platforms_group.add(platform)
+                        all_sprites_list.add(platform)
 
                 # To spawn random enemies, if there are less than 3 and the timer is zero..
                 if len(self.enemy_group) < 3 and self.next_enemy_scroll_counter <= 0:
@@ -146,11 +163,21 @@ class Player(pygame.sprite.Sprite):
                     newenemyx = 0 if random.randint(0, 1) == 0  else WIDTH - 30
                     #Random y cooridnate just above the screen
                     newenemyy = random.randrange(-80, -30)
-                    ENEMIES = Enemy(newenemyx, newenemyy, 30, 30)
-                    all_sprites_list.add(ENEMIES)
-                    enemy_group.add(ENEMIES)
+                    enemy = Enemy(newenemyx, newenemyy, 30, 30)
+                    all_sprites_list.add(enemy)
+                    self.enemy_group.add(enemy)
                     # spawn the enemy at the y cooridnate specified + a number of pixels to space it out 
                     self.next_enemy_scroll_counter = (newenemyy) + 250
+
+                #if the counter is at zero, spawn a powerup and spawn it every 1200 to 2000 pixels
+                if self.next_powerup_scroll_counter <= 0:
+                    newpowerupx = random.randint(0, WIDTH - 20)
+                    newpowerupy = -20
+                    powerup = Powerup(newpowerupx, newpowerupy, 25, 25)
+                    self.powerups_group.add(powerup)
+                    all_sprites_list.add(powerup)
+                    self.next_powerup_scroll_counter = random.randint(1500, 2000)
+                    
                     
                 
         def gravity(self):
@@ -179,15 +206,14 @@ class Player(pygame.sprite.Sprite):
         def stop(self):
                 self.change_x = 0
 
-        #Die. If player hits the bottom of the screen, 
-        
-                        
-
+  
         # for player to shoot, variable called fireball spawns fireball that comes from the center of the player
          # and comes out from the top
         def shoot(self):
+            if self.time_since_last_shot > 2000:
                 fireball = Fireball(player, enemy_group, self.rect.x,self.rect.y)
                 all_sprites_list.add(fireball)
+                self.time_since_last_shot = 0
 
 
 
@@ -239,32 +265,30 @@ class Enemy(pygame.sprite.Sprite):
                 self.rect.x += self.change_x
                 self.rect.y += self.change_y
                 if self.rect.x == 0:
-                        self.change_x = 5
+                        self.change_x = 6
                 if self.rect.x == WIDTH -30:
-                        self.change_x = -5
-
+                        self.change_x = -6
+                        
 
 class Powerup(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
-        self.image = pygame.Surface([20, 20])
+        self.image = pygame.Surface([25, 25])
         self.image.fill(Grey)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.spawn_powerup = 0 
+        self.vel_y = 5
 
     def update(self):
-        self.spawn_powerup += clock.get_time()
-        self.spawn_powerup -= abs(self.change_y)
-        if self.spawn_powerup == 3000:
-            self.rect.x = random.randrange(0, WIDTH - 20)
-            self.rect.y = random.randrnage(-30, -150)
-            newpowerup = Powerup(newpowerupx, newpowerupy, 20, 20)
-             
-            
+        self.rect.y += self.vel_y
 
 
+
+
+        
+
+   
 #initilaise pygame
 pygame.init()
 
@@ -280,25 +304,25 @@ pygame.display.set_caption('Space Hopper')
 all_sprites_list = pygame.sprite.Group()
 #create the sprites
 #platform = Platform()
-all_platforms_group = pygame.sprite.Group()
+platforms_group = pygame.sprite.Group()
 newplatform = Platform(300, HEIGHT - 100, 120,80)
 all_sprites_list.add(newplatform)
-all_platforms_group.add(newplatform)
+platforms_group.add(newplatform)
 newplatform = Platform(180, HEIGHT -  220, 120, 80)
 all_sprites_list.add(newplatform)
-all_platforms_group.add(newplatform)
+platforms_group.add(newplatform)
 newplatform = Platform(380, HEIGHT -  350, 120, 80)
 all_sprites_list.add(newplatform)
-all_platforms_group.add(newplatform)
+platforms_group.add(newplatform)
 newplatform= Platform(200, HEIGHT -  450, 120, 80)
 all_sprites_list.add(newplatform)
-all_platforms_group.add(newplatform)
+platforms_group.add(newplatform)
 newplatform = Platform(330, HEIGHT -  600, 120, 80)
 all_sprites_list.add(newplatform) 
-all_platforms_group.add(newplatform)
-PLATFORMS = Platform(random.randrange(0, WIDTH -100), random.randrange(-50, -30), 120, 80)
-all_platforms_group.add(PLATFORMS)
-all_sprites_list.add(PLATFORMS)
+platforms_group.add(newplatform)
+platform = Platform(random.randrange(0, WIDTH -100), random.randrange(-50, -30), 120, 80)
+platforms_group.add(platform)
+all_sprites_list.add(platform)
 
 enemy_group = pygame.sprite.Group()
 newenemy = Enemy(0, HEIGHT - 380, 30, 30)
@@ -308,14 +332,14 @@ newenemy = Enemy(WIDTH - 30, HEIGHT - 530, 30, 30)
 all_sprites_list.add(newenemy)
 enemy_group.add(newenemy)
 
+powerups_group = pygame.sprite.Group()
+
 
 #sets the player postion x and y cooridnates and adds it to sprite list
-player = Player(all_platforms_group, enemy_group)
+player = Player(platforms_group, enemy_group, powerups_group)
 player.rect.x = 300
 player.rect.y = HEIGHT - 100
 all_sprites_list.add(player)
-
-
 
 
 
@@ -324,7 +348,6 @@ done = False
 
 #manage how fast the screen updates
 clock = pygame.time.Clock()
-
 
 
 
@@ -356,22 +379,20 @@ while not done:
 
 
 
+        #Update the player
+        all_sprites_list.update()
+
+        
         #DRAW TEXT CODE
         screen.fill(Blue)
         all_sprites_list.draw(screen)
         draw_health(screen, Green,10, 10, player.health)
         
-         # screen blit allows the player image to be on top of everything else so when it passes somwthing
+        # screen blit allows the player image to be on top of everything else so when it passes somwthing
         # it doesnt disappear behind it.
         screen.blit(player.image, player.rect)
         
 
-        #Update the player
-        all_sprites_list.update()
-        all_platforms_group.update()
-        enemy_group.update()
-        
-        
         #updates the screen with any changes
         pygame.display.flip()
 
