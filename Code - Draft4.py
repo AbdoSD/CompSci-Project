@@ -2,7 +2,6 @@ import pygame
 import math
 import random
 
-#test
 
 #colours to be used in game
 Green = (50,205 ,50)
@@ -20,6 +19,8 @@ Orange = (255, 165, 0)
 WIDTH = 540
 HEIGHT = 720
 
+
+    
 # Drwaing the healtbar for the player. Its attributes are the surface(the screen) its colour which is green,
 # its x and y coordinates which are in the top left corner of the screen and a player_health value so it can
 #decwhich can decrease.
@@ -40,8 +41,22 @@ def draw_health(screen, color, x, y, health):
                 pygame.draw.rect(screen,color,[x,y,health,BAR_HEIGHT],0)
 
 
+# Draw the text on screen function. It has text, the string for what will be said. The
+# size of the font, the colour of the text and the x and y cooridnates. The font obects is then
+# defined to draw text. Text Surface renders the pixels of the text onto the screen.
+# The true means whther the text will be anit-aliased or not. Anit-aliased gets rid of rough
+#edges on corners of letters and makes the writing look smoother. Text rect will create
+# a text box where the text will go in. The x and y of the actual text will go directly in the
+#centre of the box.
+def message_display(surface,text, size, color, x, y):
+    titleFont = pygame.font.Font('freesansbold.ttf', size)
+    TextSurface = font.render(text, True, color)
+    TextRect = TextSurface.get_rect()
+    TextRect.center = (x, y)
+    screen.blit(TextSurface, TextRect)
 
-        
+
+                
 
 class Player(pygame.sprite.Sprite):
         def __init__(self, platforms_group, enemy_group, powerups_group):
@@ -49,8 +64,9 @@ class Player(pygame.sprite.Sprite):
                 #set height and width as local variables, fill the colour of the image.
                 width = 50
                 height = 50
-                self.image =  pygame.Surface([width,height])
+                self.image =  pygame.surface.Surface([50,50])
                 self.image.fill(Green)
+                
                 self.rect = self.image.get_rect()
                 #speed of the player. Change in its x direction or change
                 # in its  y direction
@@ -61,6 +77,7 @@ class Player(pygame.sprite.Sprite):
                 self.enemy_group = enemy_group
                 self.powerups_group = powerups_group
                 self.health= 100
+                self.score = 0 
                 #The initialisation of a timer that will count from zero and time that amount of time that passes once an enemy
                 #player collides with enemy and begins losing health
                 self.time_since_last_hit = 0
@@ -71,9 +88,6 @@ class Player(pygame.sprite.Sprite):
 
                 self.time_since_last_shot = 0
                 
-                
-                
-
                 
         def update(self):
                 #Gravity, defined below
@@ -106,8 +120,8 @@ class Player(pygame.sprite.Sprite):
                     if enemycollision:
                         self.health = self.health - 20
                         self.time_since_last_hit = 0
-                    if self.health == 0:
-                        done = True
+                    if self.health <= 20:
+                        playing = False
 
                 # collision for when player collides with powerup. If so then the powerup disappears and player should fly upwards at faster velocity
                 powerupcollision = pygame.sprite.spritecollide(self, self.powerups_group, True)
@@ -129,6 +143,7 @@ class Player(pygame.sprite.Sprite):
                         for platforms in self.platforms_group:
                                 platforms.rect.y += abs(self.change_y)
                                 if platforms.rect.top >= HEIGHT:
+                                        self.score += 10
                                         platforms.kill()
                         for enemies in self.enemy_group:
                                 enemies.rect.y += abs(self.change_y)
@@ -150,10 +165,9 @@ class Player(pygame.sprite.Sprite):
                         done = True
                                 
         
-
                 # When there are 5 platforms on screen, spawn a random platform as defined below.
                 while len(self.platforms_group) == 5:
-                        platform = Platform(random.randrange(0, WIDTH -100), random.randrange(-45,-40), 120, 80)
+                        platform = Platform(random.randrange(0, WIDTH -100), random.randrange(-45,-40), random.randrange(60,100), 25)
                         self.platforms_group.add(platform)
                         all_sprites_list.add(platform)
 
@@ -172,7 +186,7 @@ class Player(pygame.sprite.Sprite):
                 #if the counter is at zero, spawn a powerup and spawn it every 1200 to 2000 pixels
                 if self.next_powerup_scroll_counter <= 0:
                     newpowerupx = random.randint(0, WIDTH - 20)
-                    newpowerupy = -20
+                    newpowerupy = -30
                     powerup = Powerup(newpowerupx, newpowerupy, 25, 25)
                     self.powerups_group.add(powerup)
                     all_sprites_list.add(powerup)
@@ -217,11 +231,10 @@ class Player(pygame.sprite.Sprite):
 
 
 
-    
 class Platform(pygame.sprite.Sprite):
-        def __init__(self,x,y,w,h):
+        def __init__(self,x,y,width,height):
                 super().__init__()
-                self.image = pygame.Surface([100, 25])
+                self.image = pygame.Surface([width, height])
                 self.image.fill(White)
                 self.rect = self.image.get_rect()
                 self.rect.x = x
@@ -239,6 +252,7 @@ class Fireball(pygame.sprite.Sprite):
                 self.rect.x = self.player.rect.centerx
                 self.rect.y = self.player.rect.y
                 self.change_y = -8
+                self.player.score = player.score
                 
 
         def update(self):
@@ -246,6 +260,8 @@ class Fireball(pygame.sprite.Sprite):
                 if self.rect.bottom < 0:
                         self.kill()
                 fireball_hits = pygame.sprite.spritecollide(self, self.enemy_group, True)
+                if fireball_hits:
+                    self.player.score +=5
                
                     
       
@@ -278,17 +294,13 @@ class Powerup(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.vel_y = 5
+        self.vel_y = 3
 
     def update(self):
         self.rect.y += self.vel_y
 
 
 
-
-        
-
-   
 #initilaise pygame
 pygame.init()
 
@@ -305,22 +317,22 @@ all_sprites_list = pygame.sprite.Group()
 #create the sprites
 #platform = Platform()
 platforms_group = pygame.sprite.Group()
-newplatform = Platform(300, HEIGHT - 100, 120,80)
+newplatform = Platform(300, HEIGHT - 100, 120, 25)
 all_sprites_list.add(newplatform)
 platforms_group.add(newplatform)
-newplatform = Platform(180, HEIGHT -  220, 120, 80)
+newplatform = Platform(180, HEIGHT -  220, 120, 25)
 all_sprites_list.add(newplatform)
 platforms_group.add(newplatform)
-newplatform = Platform(380, HEIGHT -  350, 120, 80)
+newplatform = Platform(380, HEIGHT -  350, 120, 25)
 all_sprites_list.add(newplatform)
 platforms_group.add(newplatform)
-newplatform= Platform(200, HEIGHT -  450, 120, 80)
+newplatform= Platform(200, HEIGHT -  450, 120, 25)
 all_sprites_list.add(newplatform)
 platforms_group.add(newplatform)
-newplatform = Platform(330, HEIGHT -  600, 120, 80)
+newplatform = Platform(330, HEIGHT -  600, 120, 25)
 all_sprites_list.add(newplatform) 
 platforms_group.add(newplatform)
-platform = Platform(random.randrange(0, WIDTH -100), random.randrange(-50, -30), 120, 80)
+platform = Platform(random.randrange(0, WIDTH -100), random.randrange(-50, -30), random.randrange(60,100) , 25)
 platforms_group.add(platform)
 all_sprites_list.add(platform)
 
@@ -335,6 +347,7 @@ enemy_group.add(newenemy)
 powerups_group = pygame.sprite.Group()
 
 
+
 #sets the player postion x and y cooridnates and adds it to sprite list
 player = Player(platforms_group, enemy_group, powerups_group)
 player.rect.x = 300
@@ -344,7 +357,7 @@ all_sprites_list.add(player)
 
 
 #loop until the player clicks the close button
-done = False
+playing = True
 
 #manage how fast the screen updates
 clock = pygame.time.Clock()
@@ -352,14 +365,14 @@ clock = pygame.time.Clock()
 
 
 #-------MAIN PROGRAM LOOP--------#
-while not done:
+while playing == True:
         #limit to 60 frames per second of screen update
         clock.tick(60)
         
 
         for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                        done = True
+                        playing = False
                 
                  # When holding down a key      
                 keys = pygame.key.get_pressed()
@@ -381,12 +394,14 @@ while not done:
 
         #Update the player
         all_sprites_list.update()
-
         
+
         #DRAW TEXT CODE
         screen.fill(Blue)
         all_sprites_list.draw(screen)
         draw_health(screen, Green,10, 10, player.health)
+        message_display(screen, "Score:" + str(player.score), 22, Yellow, WIDTH/2, 15)
+        
         
         # screen blit allows the player image to be on top of everything else so when it passes somwthing
         # it doesnt disappear behind it.
