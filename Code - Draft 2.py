@@ -356,6 +356,21 @@ def game():
     player.rect.y = HEIGHT - 100
     all_sprites_list.add(player)
 
+def outro():
+    screen.fill(Blue)
+    message_display(screen, "Game Over!", 48, Red, WIDTH / 2, HEIGHT - 600)
+    message_display(screen, "Score: " + str(score), 24, Yellow, WIDTH / 2, HEIGHT - 400)
+    message_display(screen, "Press Enter to play again ", 24, Yellow, WIDTH / 2, HEIGHT - 200)
+    pygame.display.flip()
+    key_pressed = False
+    while not key_pressed:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    key_pressed = True
+
     # -------MAIN PROGRAM LOOP--------#
 
     while not player.dead():
