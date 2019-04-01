@@ -1,3 +1,5 @@
+
+
 import pygame
 import math
 import random
@@ -63,7 +65,6 @@ class Player(pygame.sprite.Sprite):
         width = 50
         height = 50
         self.image = pygame.image.load("img/bluie.png").convert_alpha()
-
         self.rect = self.image.get_rect()
         # speed of the player. Change in its x direction or change
         # in its  y direction
@@ -121,7 +122,7 @@ class Player(pygame.sprite.Sprite):
         # collision for when player collides with powerup. If so then the powerup disappears and player should fly upwards at faster velocity
         powerupcollision = pygame.sprite.spritecollide(self, self.powerups_group, True)
         if powerupcollision:
-            self.change_y = -25
+            self.change_y = -30
 
         # wraps around the top and bottom of screen
         if self.rect.x > WIDTH:
@@ -220,7 +221,6 @@ class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
         self.image = pygame.image.load("img/platform.png").convert_alpha()
-
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -230,7 +230,6 @@ class Fireball(pygame.sprite.Sprite):
     def __init__(self, player, enemy_group, x, y):
         super().__init__()
         self.image = pygame.image.load("img/fireball.png").convert_alpha()
-
         self.rect = self.image.get_rect()
         self.player = player
         self.enemy_group = enemy_group
@@ -312,7 +311,25 @@ def intro():
                 key_pressed = True
 
 
-
+def outro(score, highscore, new_highscore):
+    screen.fill(Blue)
+    message_display(screen, "Game Over!", 48, Red, WIDTH / 2, HEIGHT - 600)
+    message_display(screen, "Score: " + str(score), 24, Yellow, WIDTH / 2, HEIGHT - 400)
+    if new_highscore:
+        highscore_text = "NEW HIGH SCORE ACHIEVED: "
+    else:
+        highscore_text = "Highscore: "
+    message_display(screen, highscore_text + str(highscore), 24, Yellow, WIDTH / 2, HEIGHT - 350)
+    message_display(screen, "Press Enter to play again ", 24, Yellow, WIDTH / 2, HEIGHT - 200)
+    pygame.display.flip()
+    key_pressed = False
+    while not key_pressed:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    key_pressed = True
 
 
 def game():
@@ -356,21 +373,6 @@ def game():
     player.rect.y = HEIGHT - 100
     all_sprites_list.add(player)
 
-def outro():
-    screen.fill(Blue)
-    message_display(screen, "Game Over!", 48, Red, WIDTH / 2, HEIGHT - 600)
-    message_display(screen, "Score: " + str(score), 24, Yellow, WIDTH / 2, HEIGHT - 400)
-    message_display(screen, "Press Enter to play again ", 24, Yellow, WIDTH / 2, HEIGHT - 200)
-    pygame.display.flip()
-    key_pressed = False
-    while not key_pressed:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    key_pressed = True
-
     # -------MAIN PROGRAM LOOP--------#
 
     while not player.dead():
@@ -413,17 +415,21 @@ def outro():
         # updates the screen with any changes
         pygame.display.flip()
 
+    return player.score
 
 
 intro()
-score = game()
+
+highscore = 0
+
+while True:
+    score = game()
+    new_highscore = False
+    if score > highscore:
+        new_highscore = True
+        highscore = score
+    outro(score, highscore, new_highscore)
 
 pygame.quit()
 
-
-
-                        
-
-
-       
 
